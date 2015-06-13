@@ -29,6 +29,7 @@
 		5F8429491B299A4200CF56A4 /* SwiftMIDITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftMIDITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F84294E1B299A4200CF56A4 /* SwiftMIDITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftMIDITests.swift; sourceTree = "<group>"; };
 		5F8429501B299A4200CF56A4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		5FBA78621B299F3D000BF673 /* MyPlayground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = MyPlayground.playground; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +54,7 @@
 		5F8429351B299A4100CF56A4 = {
 			isa = PBXGroup;
 			children = (
+				5FBA78621B299F3D000BF673 /* MyPlayground.playground */,
 				5F8429411B299A4100CF56A4 /* SwiftMIDI */,
 				5F84294D1B299A4200CF56A4 /* SwiftMIDITests */,
 				5F8429401B299A4100CF56A4 /* Products */,
@@ -142,6 +144,7 @@
 		5F8429361B299A4100CF56A4 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0700;
 				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = Unclutter;
 				TargetAttributes = {
@@ -307,6 +310,7 @@
 		5F8429541B299A4200CF56A4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -317,12 +321,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = nl.unclutter.SwiftMIDI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		5F8429551B299A4200CF56A4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -375,6 +381,7 @@
 				5F8429551B299A4200CF56A4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		5F8429561B299A4200CF56A4 /* Build configuration list for PBXNativeTarget "SwiftMIDITests" */ = {
 			isa = XCConfigurationList;
@@ -383,6 +390,7 @@
 				5F8429581B299A4200CF56A4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
