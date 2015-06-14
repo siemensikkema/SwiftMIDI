@@ -3,139 +3,142 @@ import CoreMIDI
 
 XCPSetExecutionShouldContinueIndefinitely(true)
 
-protocol MIDINotificationConvertible {}
-
-extension MIDIIOErrorNotification: MIDINotificationConvertible {}
-extension MIDIObjectAddRemoveNotification: MIDINotificationConvertible {}
-extension MIDIObjectPropertyChangeNotification: MIDINotificationConvertible {}
-
-func convertMIDINotification<T: MIDINotificationConvertible>(notificationPointer: UnsafePointer<MIDINotification>) -> T {
-    return UnsafePointer<T>(notificationPointer)[0]
+protocol Initable {
+     init()
 }
 
-enum MIDIStateChange {
+extension MIDIObjectRef: Initable {}
 
-    init(notificationPointer: UnsafePointer<MIDINotification>) {
-        let notification = notificationPointer[0]
+enum SwiftMIDIError: String, ErrorType {
+    case NoError = "No error"
+    case InvalidClient = "Invalid client"
+    case InvalidPort = "Invalid port"
+    case WrongEndpointType = "Wrong endpoint type"
+    case NoConnection = "No connection"
+    case UnknownEndpoint = "Unknown endpoint"
+    case UnknownProperty = "Unknown property"
+    case WrongPropertyType = "Wrong property type"
+    case NoCurrentSetup = "No current setup"
+    case MessageSendError = "Message send error"
+    case ServerStartError = "Server start error"
+    case SetupFormatError = "Setup format error"
+    case WrongThread = "Wrong thread"
+    case ObjectNotFound = "Object not found"
+    case IDNotUnique = "Not unique"
+    case Unknown = "Unknown MIDI Error"
 
-        // convert MIDINotification to MIDIStateChange. A safety check is performed whether the size corresponds to the size of the type of MIDI Notification used for the associated value when applicable.
-        switch (notification.messageID, Int(notification.messageSize)) {
-        case (.MsgIOError, sizeof(MIDIIOErrorNotification)):
-            self = .IOError(convertMIDINotification(notificationPointer))
-        case (.MsgObjectAdded, sizeof(MIDIObjectAddRemoveNotification)):
-            self = .ObjectAdded(convertMIDINotification(notificationPointer))
-        case (.MsgObjectRemoved, sizeof(MIDIObjectAddRemoveNotification)):
-            self = .ObjectRemoved(convertMIDINotification(notificationPointer))
-        case (.MsgPropertyChanged, sizeof(MIDIObjectPropertyChangeNotification)):
-            self = .PropertyChanged(convertMIDINotification(notificationPointer))
-        case (.MsgSerialPortOwnerChanged, _):
-            self = .SerialPortOwnerChanged
-        case (.MsgSetupChanged, _):
-            self = .SetupChanged
-        case (.MsgThruConnectionsChanged, _):
-            self = .ThruConnectionsChanged
-        default:
-            self = .UnknownError
-        }
-    }
-
-    case IOError(MIDIIOErrorNotification)
-    case ObjectAdded(MIDIObjectAddRemoveNotification)
-    case ObjectRemoved(MIDIObjectAddRemoveNotification)
-    case PropertyChanged(MIDIObjectPropertyChangeNotification)
-    case SerialPortOwnerChanged
-    case SetupChanged
-    case ThruConnectionsChanged
-    case UnknownError
-}
-
-extension MIDIStateChange: CustomStringConvertible {
-    var description: String {
-        switch self {
-        case .IOError(let errorNotification):
-            return "IO error occured. \(errorNotification)"
-        case .ObjectAdded(let addNotification):
-            return "Object added. \(addNotification)"
-        case .ObjectRemoved(let removeNotification):
-            return "Object added. \(removeNotification)"
-        case .PropertyChanged(let propertyChangeNotification):
-            return "Property changed. \(propertyChangeNotification)"
-        case .SerialPortOwnerChanged:
-            return "Serial port owner changed"
-        case .SetupChanged:
-            return "Setup changed"
-        case .ThruConnectionsChanged:
-            return "Thru connections changed"
-        case .UnknownError:
-            return "An unknown error occured"
+    init(status: OSStatus) {
+        switch Int(status) {
+        case Int(noErr): self = .NoError
+        case kMIDIInvalidClient: self = .InvalidClient
+        case kMIDIInvalidPort: self = .InvalidPort
+        case kMIDIWrongEndpointType: self = .WrongEndpointType
+        case kMIDINoConnection: self = .NoConnection
+        case kMIDIUnknownEndpoint: self = .UnknownEndpoint
+        case kMIDIUnknownProperty: self = .UnknownProperty
+        case kMIDIWrongPropertyType: self = .WrongPropertyType
+        case kMIDINoCurrentSetup: self = .NoCurrentSetup
+        case kMIDIMessageSendErr: self = .MessageSendError
+        case kMIDIServerStartErr: self = .ServerStartError
+        case kMIDISetupFormatErr: self = .SetupFormatError
+        case kMIDIWrongThread: self = .WrongThread
+        case kMIDIObjectNotFound: self = .ObjectNotFound
+        case kMIDIIDNotUnique: self = .IDNotUnique
+        default: self = .Unknown
         }
     }
 }
 
-extension MIDIIOErrorNotification: CustomStringConvertible {
-    public var description: String {
-        return "Driver device: \(driverDevice), error: \(errorCode.MIDIErrorString)"
+func createMIDIObject<T: Initable>(createClosure: UnsafeMutablePointer<T> -> OSStatus) throws -> T {
+    var t = T()
+    let status = withUnsafeMutablePointer(&t) {
+        return createClosure($0)
+    }
+    if status == noErr {
+        return t
+    } else {
+        throw SwiftMIDIError(status: status)
     }
 }
 
-extension MIDIObjectAddRemoveNotification: CustomStringConvertible {
-    public var description: String {
-        return "Parent: \(parent), parent type: \(parentType), child: \(child), child type: \(childType)"
+func getMIDIObjectProperty<T>(createClosure: UnsafeMutablePointer<Unmanaged<T>?> -> OSStatus) throws -> T? {
+    var t: Unmanaged<T>? = .None
+    let status = withUnsafeMutablePointer(&t) {
+        return createClosure($0)
+    }
+    if status == noErr {
+        return t?.takeUnretainedValue()
+    } else {
+        throw SwiftMIDIError(status: status)
     }
 }
 
-extension MIDIObjectPropertyChangeNotification: CustomStringConvertible {
-    public var description: String {
+class Client {
 
-        return "Object: \(object), object type: \(objectType), property name: \(propertyName.takeUnretainedValue())"
+    let clientRef: MIDIObjectRef
+    var inputPorts: [InputPort] = []
+
+    init(clientName: String = "com.swiftmidi.client") throws {
+        do {
+            try clientRef = createMIDIObject {
+                return MIDIClientCreate(clientName, {
+                        let stateChange = MIDIStateChange(notificationPointer: $0.0)
+                        stateChange
+                    }, nil, $0)
+            }
+        } catch {
+            clientRef = 0
+            throw error
+        }
     }
-}
 
-extension OSStatus {
-    var MIDIErrorString: String {
-        switch Int(self) {
-        case kMIDIInvalidClient: return "Invalid client"
-        case kMIDIInvalidPort: return "Invalid port"
-        case kMIDIWrongEndpointType: return "Wrong endpoint type"
-        case kMIDINoConnection: return "No connection"
-        case kMIDIUnknownEndpoint: return "Unknown endpoint"
-        case kMIDIUnknownProperty: return "Unknown property"
-        case kMIDIWrongPropertyType: return "Wrong property type"
-        case kMIDINoCurrentSetup: return "No current setup"
-        case kMIDIMessageSendErr: return "Message send error"
-        case kMIDIServerStartErr: return "Server start error"
-        case kMIDISetupFormatErr: return "Setup format error"
-        case kMIDIWrongThread: return "Wrong thread"
-        case kMIDIObjectNotFound: return "Object not found"
-        case kMIDIIDNotUnique: return "Not unique"
-        default: return "\(self)"
+    var name: String? {
+        do {
+            let name = try getMIDIObjectProperty {
+                return MIDIObjectGetStringProperty(self.clientRef, kMIDIPropertyName, $0)
+            }
+            return name as String?
+        } catch {
+            return nil
+        }
+    }
+
+    func addInputPort() throws {
+        if let name = name {
+            try inputPorts.append(InputPort(clientRef: clientRef, portName: "\(name).port\(inputPorts.count)"))
+        } else {
+            throw SwiftMIDIError.Unknown
         }
     }
 }
 
-extension MIDIObjectType: CustomStringConvertible {
-    public var description: String {
-        switch self {
-        case Other: return "Other"
-        case Device: return "Device"
-        case Entity: return "Entity"
-        case Source: return "Source"
-        case Destination: return "Destination"
-        case ExternalDevice: return "External Device"
-        case ExternalEntity: return "External Entity"
-        case ExternalSource: return "External Source"
-        case ExternalDestination: return "External Destination"
+class InputPort {
+
+    let inputPortRef: MIDIPortRef
+
+    init(clientRef: MIDIObjectRef, portName: String) throws {
+        do {
+            try inputPortRef = createMIDIObject {
+                return MIDIInputPortCreate(clientRef, portName, {
+                    print($0.0)
+                    }, nil, $0)
+            }
+        } catch {
+            inputPortRef = 0
+            throw error
         }
     }
 }
 
-var client = MIDIClientRef()
+do {
+    if MIDIGetNumberOfSources() > 0 {
+        let client = try Client()
+        try client.addInputPort()
 
-let status = withUnsafeMutablePointer(&client) {
-    return MIDIClientCreate("SwiftMIDI",
-        { (notificationPointer, _) in
-            let stateChange = MIDIStateChange(notificationPointer: notificationPointer)
-            stateChange
-        },
-        nil, $0)
+        let source = MIDIGetSource(0)
+        MIDIPortConnectSource(client.inputPorts.first!.inputPortRef, source, nil)
+    }
+} catch {
+    print(error)
 }
+
