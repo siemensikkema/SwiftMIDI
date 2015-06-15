@@ -72,6 +72,19 @@ class Client {
     }
 }
 
+func packetsFromPacketListPointer(packetListPointer: UnsafePointer<MIDIPacketList>) -> [MIDIPacket] {
+    var packets: [MIDIPacket] = []
+
+    let MIDIPacketPointer = MIDIPacketListInit(UnsafeMutablePointer(packetListPointer))
+
+    for _ in 0..<packetListPointer.memory.numPackets {
+        packets.append(MIDIPacketPointer.memory)
+        MIDIPacketNext(MIDIPacketPointer)
+    }
+
+    return packets
+}
+
 class InputPort {
 
     let inputPortRef: MIDIPortRef
@@ -79,8 +92,12 @@ class InputPort {
     init(clientRef: MIDIObjectRef, portName: String) throws {
         do {
             try inputPortRef = createMIDIObject {
-                return MIDIInputPortCreate(clientRef, portName, {
-                    print($0.0)
+                return MIDIInputPortCreate(clientRef, portName, { (packetListPointer, _, _) in
+                    let packets = packetsFromPacketListPointer(packetListPointer)
+
+                    for packet in packets {
+                        packet.timeStamp
+                    }
                     }, nil, $0)
             }
         } catch {
