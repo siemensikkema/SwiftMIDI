@@ -10,6 +10,11 @@
 		5F8429431B299A4100CF56A4 /* SwiftMIDI.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F8429421B299A4100CF56A4 /* SwiftMIDI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5F84294A1B299A4200CF56A4 /* SwiftMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F84293F1B299A4100CF56A4 /* SwiftMIDI.framework */; };
 		5F84294F1B299A4200CF56A4 /* SwiftMIDITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F84294E1B299A4200CF56A4 /* SwiftMIDITests.swift */; };
+		5FEF57A11B31B44100B9FEA7 /* Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FEF579C1B31B44100B9FEA7 /* Client.swift */; };
+		5FEF57A21B31B44100B9FEA7 /* Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FEF579D1B31B44100B9FEA7 /* Common.swift */; };
+		5FEF57A31B31B44100B9FEA7 /* InputPort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FEF579E1B31B44100B9FEA7 /* InputPort.swift */; };
+		5FEF57A41B31B44100B9FEA7 /* MIDIStateChange.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FEF579F1B31B44100B9FEA7 /* MIDIStateChange.swift */; };
+		5FEF57A51B31B44100B9FEA7 /* SwiftMIDIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FEF57A01B31B44100B9FEA7 /* SwiftMIDIError.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -30,6 +35,11 @@
 		5F84294E1B299A4200CF56A4 /* SwiftMIDITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftMIDITests.swift; sourceTree = "<group>"; };
 		5F8429501B299A4200CF56A4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5FBA78621B299F3D000BF673 /* MyPlayground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = MyPlayground.playground; sourceTree = "<group>"; };
+		5FEF579C1B31B44100B9FEA7 /* Client.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Client.swift; sourceTree = "<group>"; };
+		5FEF579D1B31B44100B9FEA7 /* Common.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Common.swift; sourceTree = "<group>"; };
+		5FEF579E1B31B44100B9FEA7 /* InputPort.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InputPort.swift; sourceTree = "<group>"; };
+		5FEF579F1B31B44100B9FEA7 /* MIDIStateChange.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MIDIStateChange.swift; sourceTree = "<group>"; };
+		5FEF57A01B31B44100B9FEA7 /* SwiftMIDIError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftMIDIError.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +83,11 @@
 		5F8429411B299A4100CF56A4 /* SwiftMIDI */ = {
 			isa = PBXGroup;
 			children = (
+				5FEF579C1B31B44100B9FEA7 /* Client.swift */,
+				5FEF579D1B31B44100B9FEA7 /* Common.swift */,
+				5FEF579E1B31B44100B9FEA7 /* InputPort.swift */,
+				5FEF579F1B31B44100B9FEA7 /* MIDIStateChange.swift */,
+				5FEF57A01B31B44100B9FEA7 /* SwiftMIDIError.swift */,
 				5F8429421B299A4100CF56A4 /* SwiftMIDI.h */,
 				5F8429441B299A4100CF56A4 /* Info.plist */,
 			);
@@ -196,6 +211,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5FEF57A31B31B44100B9FEA7 /* InputPort.swift in Sources */,
+				5FEF57A21B31B44100B9FEA7 /* Common.swift in Sources */,
+				5FEF57A41B31B44100B9FEA7 /* MIDIStateChange.swift in Sources */,
+				5FEF57A11B31B44100B9FEA7 /* Client.swift in Sources */,
+				5FEF57A51B31B44100B9FEA7 /* SwiftMIDIError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
