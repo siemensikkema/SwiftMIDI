@@ -18,6 +18,9 @@ public class Client {
 
     deinit {
         MIDIClientDispose(clientRef)
+        for inputPort in inputPorts {
+            inputPort.breakReferenceCycle()
+        }
     }
 
     func name() throws -> String? {
