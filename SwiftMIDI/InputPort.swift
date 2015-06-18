@@ -12,6 +12,7 @@ public class InputPort {
     }
 
     static func create(withName name: String, clientRef: MIDIClientRef, packetInput: MIDIPacketInput) throws -> InputPort {
+
         let inputPortRef = try getMIDIObject { pointerToMIDIPortRef in
 
             MIDIInputPortCreate(clientRef, name, { (pointerToPacketList, _, srcConnRefCon) -> Void in
@@ -24,26 +25,27 @@ public class InputPort {
         return InputPort(inputPortRef: inputPortRef, packetInput: packetInput)
     }
     
-    func breakReferenceCycle() {
-        pointerToSelf.destroy(1)
+    init(inputPortRef: MIDIPortRef, packetInput: MIDIPacketInput) {
+        self.packetInput = packetInput
+        self.inputPortRef = inputPortRef
+        pointerToSelf = UnsafeMutablePointer.alloc(1)
+
+        pointerToSelf.memory = self
+    }
+
+    deinit {
+        MIDIPortDispose(inputPortRef)
     }
 
     private let inputPortRef: MIDIPortRef
     private let packetInput: MIDIPacketInput
     private var sources: [MIDIEndpointRef] = []
 
-    /// This pointer is used to identify the InputPort instance in the
+    /// Used to identify the InputPort instance in the MIDI read proc
     private let pointerToSelf: UnsafeMutablePointer<InputPort>
 
-    private init(inputPortRef: MIDIPortRef, packetInput: MIDIPacketInput) {
-        self.packetInput = packetInput
-        self.inputPortRef = inputPortRef
-        pointerToSelf = UnsafeMutablePointer.alloc(1)
-        pointerToSelf.memory = self
-    }
-
-    deinit {
-        MIDIPortDispose(inputPortRef)
+    func breakReferenceCycle() {
+        pointerToSelf.destroy(1)
     }
 }
 

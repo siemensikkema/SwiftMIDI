@@ -6,10 +6,17 @@ class SwiftMIDITests: XCTestCase {
 
     func testInputPort() {
         do {
-            expectationWithDescription("")
+            let e = expectationWithDescription("Wait for user input")
             let client = try Client.create()
             try client.addInputPort { packets in
-                print(packets.count)
+
+                for packet in packets {
+                    print(packet.timeStamp)
+                }
+
+                dispatch_async(dispatch_get_main_queue()) {
+                    e.fulfill()
+                }
             }
 
             if let inputPort = client.inputPorts.first where MIDIGetNumberOfSources() > 0 {

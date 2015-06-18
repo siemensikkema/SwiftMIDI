@@ -1,7 +1,6 @@
 import CoreMIDI
 
 public class Client {
-    let clientRef: MIDIClientRef
     public var inputPorts: [InputPort] = []
 
     public static func create(withName name: String = "com.swiftmidi.client") throws -> Client {
@@ -12,7 +11,11 @@ public class Client {
             })
     }
 
-    init(clientRef: MIDIClientRef) {
+    public func addInputPort(packetInput: MIDIPacketInput) throws {
+        try inputPorts.append(InputPort.create(withName: "\(name()).port\(inputPorts.count)", clientRef: clientRef, packetInput: packetInput))
+    }
+
+    private init(clientRef: MIDIClientRef) {
         self.clientRef = clientRef
     }
 
@@ -23,14 +26,12 @@ public class Client {
         }
     }
 
-    func name() throws -> String? {
+    private let clientRef: MIDIClientRef
+
+    private func name() throws -> String? {
         let name = try getMIDIObject {
             return MIDIObjectGetStringProperty(clientRef, kMIDIPropertyName, $0)
         }
         return name as String?
-    }
-
-    public func addInputPort(packetInput: MIDIPacketInput) throws {
-        try inputPorts.append(InputPort.create(withName: "\(name()).port\(inputPorts.count)", clientRef: clientRef, packetInput: packetInput))
     }
 }
