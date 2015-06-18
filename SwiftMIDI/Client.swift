@@ -1,5 +1,6 @@
 import CoreMIDI
 
+/// Wrapper class for CoreMIDI's MIDIClientRef
 public class Client {
     public var inputPorts: [InputPort] = []
 
@@ -15,6 +16,7 @@ public class Client {
         try inputPorts.append(InputPort.create(withName: "\(name()).port\(inputPorts.count)", clientRef: clientRef, packetInput: packetInput))
     }
 
+    // MARK: - Private
     private init(clientRef: MIDIClientRef) {
         self.clientRef = clientRef
     }
