@@ -15,54 +15,41 @@ func packetsFromPointerToPacketList(pointerToPacketList: UnsafePointer<MIDIPacke
     return packets
 }
 
-/// packet input closures for each input port
-var availablePacketInputIndex = 0
-var packetInputs: [Int: MIDIPacketInput] = [:]
-
 public class InputPort {
     let inputPortRef: MIDIPortRef
-    let packetInputIndex: Int
+    let packetInput: MIDIPacketInput
     var sources: [MIDIEndpointRef] = []
 
     static func create(withName name: String, clientRef: MIDIClientRef, packetInput: MIDIPacketInput) throws -> InputPort {
 
-        // register packet input closure while ensuring thread safety
-        objc_sync_enter(availablePacketInputIndex)
-        defer { objc_sync_exit(availablePacketInputIndex) }
-        packetInputs[availablePacketInputIndex++] = packetInput
-
         let inputPortRef = try getMIDIObject { pointerToMIDIPortRef in
-            withUnsafeMutablePointer(&availablePacketInputIndex) { pointerToIndex in
 
-                MIDIInputPortCreate(clientRef, name, { (pointerToPacketList, _, pointerToIndex) -> Void in
+            MIDIInputPortCreate(clientRef, name, { (pointerToPacketList, _, pointerToInputPort) -> Void in
 
-//                    packetInputs[0]?([])
+                let inputPort = UnsafeMutablePointer<InputPort>(pointerToInputPort).memory
+                inputPort.packetInput(packetsFromPointerToPacketList(pointerToPacketList))
 
-                    let index = UnsafePointer<Int>(pointerToIndex).memory
-                    if let packetInput = packetInputs[index] {
-                        packetInput(packetsFromPointerToPacketList(pointerToPacketList))
-                    }
-                    }, pointerToIndex, pointerToMIDIPortRef)
-            }
+                }, nil, pointerToMIDIPortRef)
         }
 
-        return InputPort(inputPortRef: inputPortRef, packetInputIndex: availablePacketInputIndex)
+        return InputPort(inputPortRef: inputPortRef, packetInput: packetInput)
     }
 
-    init(inputPortRef: MIDIPortRef, packetInputIndex: Int) {
-        self.packetInputIndex = packetInputIndex
+    init(inputPortRef: MIDIPortRef, packetInput: MIDIPacketInput) {
+        self.packetInput = packetInput
         self.inputPortRef = inputPortRef
     }
 
     deinit {
         MIDIPortDispose(inputPortRef)
-        packetInputs[packetInputIndex] = nil
     }
 
     public func connectSource(source: MIDIEndpointRef) throws {
-        var localPacketInputIndex = packetInputIndex
+
+        var localSelf = self
+
         try evaluateStatus {
-            withUnsafeMutablePointer(&localPacketInputIndex) {
+            withUnsafeMutablePointer(&localSelf) {
                 MIDIPortConnectSource(self.inputPortRef, source, $0)
             }
         }

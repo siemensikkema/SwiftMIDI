@@ -1,6 +1,7 @@
 import XCTest
+import AppKit
 import CoreMIDI
-@testable import SwiftMIDI
+@testable import SwiftMIDIMac
 
 class SwiftMIDITests: XCTestCase {
 
@@ -10,9 +11,9 @@ class SwiftMIDITests: XCTestCase {
             let client = try Client.create()
             try client.addInputPort { packets in
                 print(packets.count)
-            }
+             }
 
-            if let inputPort = client.inputPorts.first where MIDIGetNumberOfSources() > 0 {
+            if let inputPort = client.inputPorts.first { //where MIDIGetNumberOfSources() > 0 {
                 try inputPort.connectSource(MIDIGetSource(0))
                 print(inputPort)
             }
